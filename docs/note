@@ -1,0 +1,105 @@
+# Vicky: LPG
+
+Example: enriched power query excel (SOH)
+Takeaway: division specified master data
+-add product mapping to reduce communication bondary
+-add vendor info
+-add financial metrics, tp
+-add location info
+
+Pain Point:
+System: {Must}
+-data loss (PR1, AA site E1[LED], 金蝶[BPG 占了1/3 revenue]), hope a china LPG full picture [CNDB SO部分会全一些，PO Inventory也会缺]
+-E1 TP不准? 现在是找IT去拉取的
+
+Maunal: on time sync
+
+Logic: validation
+
+
+Suggestion:
+-按系统拼数据
+-Align fields definition across systems
+-需要一个master data change monitor，抓取到异动(价格非常大) {Should}
+-Master data IT logic 固化成一个user manual
+-Job monitor: failure alert [OS: 是不是在report层面都增加update_time来区分] 
+
+
+
+# Nancy: AIG
+
+Pain Point:
+-Master data: material, customer, vendor, logistics, pricing, 
+-Business dimension: 越common越好 [OS: DIM, DWS层] {Should}
+
+
+# Lijing： AIG
+Example:
+logistics过来的LT的层级不一致，需要整合各个层级的metrics。
+B2B的单子有的在SFDC里面，目前没包含
+CMS data现在看不到了，
+
+Suggestion：
+-常用的可以固定成report 
+-每个report的可以有data dictionary
+
+# CSR:
+integrate: CPQ
+
+
+# TODO:
+-master data: follow-up
+-data mart as-is: share general fields -> compare -> data dictionary
+-training
+
+--------------------------------------------------------------------------------------------------
+Meeting Minutes
+Vicky:
+Master Data
+# LPG PR1
+\\10.68.65.110\ctc\TFS-Supply Chain\Public\COE\LPG DataSource\master data
+
+tpp_product_leadtime: commercial COA team 从ttos导出放进公盘，默认2011的 coalesce(2011,2018)
+一般都是新建SKU，一次性采购，ptt 生产时间+运输，grt 仓库入库出库时间 --》 生产时间，运输+入库，这里的estimated是ptt+grt key：SKU
+
+itemcategory：重分类到planning的 TAB/TAN/TAS key：itemcategory
+
+MD List: 只能卖给医疗（MD 必须放在医疗专用库位） 或 科研（IOO） 其中一个，解决历史是IOO但现在是MD的问题 key： SKU
+
+PR1 stock location：把MD加入到palnttype里区分，其实就是sto_loc以M结尾就是MD； key： plant&stoc
+Column Type: concession 有问题的commercial不要的，每年计提42%；non-MRP，return, repair, replacement的；建议可以加一个financial type
+
+SKU Product info: SKU的自定义type mapping，正常来讲，一个SKU只会对应一个division，COO可以放进去 key： SKU
+
+需求：datamart数据保留最细粒度，product master data 一周一次 archive
+
+
+
+------------------------------------------------------------
+
+
+Allen, xiaolin：
+E1 AA&金蝶
+金蝶：只有BIBJ的， it eva yang；只是对账和收货的作用
+--BID backlog reprot
+只有openso，so-sku，会拆行，一个so-sku可能有多行（即可能按CRD拆分）
+没有master data，每次都是向pm要，比如产地，工厂
+
+--K3库存查询
+长代码会包含产地信息，一个短代码会对应多个长代码，相当于SPU SKU的概念
+
+--没有PO信息
+是用backorder report china倒推的，数据源SAP R12，global
+order number，60苏州，70新加坡
+
+只用金蝶录PO，然后pdf给global的CSR，CSR在SAP录SO，所以global的backorder report china是SO的tracking，对金蝶来说是PO
+
+
+E1:
+每天从Job上download report
+
+希望留历史的情况：比如在金蝶创建PO里备注上给谁预留的，此时只看前openpo就不够看了
+
+
+
+

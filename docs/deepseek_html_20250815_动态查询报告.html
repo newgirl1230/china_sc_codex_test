@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>报表查看 - 供应链分析平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+  <div id="app">
+    <el-container>
+      <!-- 侧边导航 -->
+      <el-aside width="220px">
+        <div class="logo">供应链分析平台</div>
+        <el-menu :default-active="activeMenu">
+          <el-menu-item index="dashboard">
+            <i class="el-icon-data-line"></i>
+            <span>仪表盘</span>
+          </el-menu-item>
+          <el-menu-item index="reports">
+            <i class="el-icon-document"></i>
+            <span>报表中心</span>
+          </el-menu-item>
+        </el-menu>
+      </el-aside>
+
+      <el-container>
+        <el-header>
+          <div class="header-toolbar">
+            <el-breadcrumb separator="/">
+              <el-breadcrumb-item>供应链分析</el-breadcrumb-item>
+              <el-breadcrumb-item>库存周转报表</el-breadcrumb-item>
+            </el-breadcrumb>
+            <div class="user-info">
+              <el-dropdown>
+                <span class="el-dropdown-link">
+                  <el-avatar size="small"></el-avatar>
+                  管理员<i class="el-icon-arrow-down"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>个人中心</el-dropdown-item>
+                  <el-dropdown-item>退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </div>
+        </el-header>
+
+        <el-main>
+          <el-card>
+            <div slot="header">
+              <span>库存周转分析报表</span>
+              <div style="float: right;">
+                <el-button-group>
+                  <el-button size="small" icon="el-icon-refresh" @click="refreshData">刷新</el-button>
+                  <el-button size="small" icon="el-icon-download" @click="exportReport">导出</el-button>
+                  <el-button size="small" icon="el-icon-printer" @click="printReport">打印</el-button>
+                  <el-button size="small" icon="el-icon-star-off" @click="saveAsFavorite">收藏</el-button>
+                </el-button-group>
+              </div>
+            </div>
+
+            <div class="report-toolbar">
+              <el-form inline>
+                <el-form-item label="时间范围">
+                  <el-date-picker
+                    v-model="dateRange"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期">
+                  </el-date-picker>
+                </el-form-item>
+                <el-form-item label="仓库">
+                  <el-select v-model="selectedWarehouse" multiple placeholder="全部仓库">
+                    <el-option
+                      v-for="item in warehouses"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="applyFilters">应用</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+
+            <el-table
+              :data="tableData"
+              border
+              style="width: 100%"
+              height="500"
+              v-loading="loading"
+              @sort-change="handleSortChange">
+              <el-table-column
+                prop="product_id"
+                label="产品ID"
+                sortable
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="product_name"
+                label="产品名称"
+                sortable
+                width="180">
+              </el-table-column>
+              <el-table-column
+                prop="category"
+                label="类别"
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="begin_inventory"
+                label="期初库存"
+                sortable
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="end_inventory"
+                label="期末库存"
+                sortable
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="sales_quantity"
+                label="销售数量"
+                sortable
+                width="120">
+              </el-table-column>
+              <el-table-column
+                prop="turnover_rate"
+                label="周转率"
+                sortable
+                width="120">
+                <template slot-scope="scope">
+                  <el-tag :type="getTurnoverRateType(scope.row.turnover_rate)">
+                    {{ scope.row.turnover_rate }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="warehouse"
+                label="仓库"
+                width="120">
+              </el-table-column>
+            </el-table>
+
+            <div class="pagination-container">
+              <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                :current-page="currentPage"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="total">
+              </el-pagination>
+            </div>
+          </el-card>
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          activeMenu: 'reports',
+          dateRange: [],
+          selectedWarehouse: [],
+          warehouses: [
+            { value: 'east', label: '华东仓' },
+            { value: 'south', label: '华南仓' },
+            { value: 'north', label: '华北仓' },
+            { value: 'west', label: '西南仓' }
+          ],
+          loading: false,
+          tableData: [
+            { product_id: 'P1001', product_name: '商品A', category: '电子产品', 
+              begin_inventory: 120, end_inventory: 80, sales_quantity: 40, 
+              turnover_rate: 0.4, warehouse: '华东仓' },
+            { product_id: 'P1002', product_name: '商品B', category: '家居用品', 
+              begin_inventory: 80, end_inventory: 60, sales_quantity: 20, 
+              turnover_rate: 0.29, warehouse: '华南仓' },
+            { product_id: 'P1003', product_name: '商品C', category: '食品', 
+              begin_inventory: 200, end_inventory: 150, sales_quantity: 50, 
+              turnover_rate: 0.29, warehouse: '华北仓' },
+            { product_id: 'P1004', product_name: '商品D', category: '电子产品', 
+              begin_inventory: 90, end_inventory: 40, sales_quantity: 50, 
+              turnover_rate: 0.69, warehouse: '华东仓' },
+            { product_id: 'P1005', product_name: '商品E', category: '家居用品', 
+              begin_inventory: 150, end_inventory: 100, sales_quantity: 50, 
+              turnover_rate: 0.4, warehouse: '华南仓' }
+          ],
+          currentPage: 1,
+          pageSize: 10,
+          total: 50
+        }
+      },
+      methods: {
+        getTurnoverRateType(rate) {
+          if (rate >= 0.6) return 'danger';
+          if (rate >= 0.4) return 'warning';
+          return 'success';
+        },
+        applyFilters() {
+          this.loading = true;
+          // 模拟API调用
+          setTimeout(() => {
+            this.loading = false;
+            this.$message.success('筛选条件已应用');
+          }, 1000);
+        },
+        refreshData() {
+          this.loading = true;
+          // 模拟API调用
+          setTimeout(() => {
+            this.loading = false;
+            this.$message.success('数据已刷新');
+          }, 1000);
+        },
+        exportReport() {
+          this.$message.info('导出功能将在实际应用中实现');
+        },
+        printReport() {
+          window.print();
+        },
+        saveAsFavorite() {
+          this.$message.success('报表已收藏');
+        },
+        handleSizeChange(val) {
+          this.pageSize = val;
+          this.fetchData();
+        },
+        handleCurrentChange(val) {
+          this.currentPage = val;
+          this.fetchData();
+        },
+        handleSortChange({ column, prop, order }) {
+          this.$message.info(`按 ${prop} ${order} 排序`);
+        },
+        fetchData() {
+          // 实际应用中会调用API获取分页数据
+        }
+      }
+    });
+  </script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #app {
+      height: 100%;
+    }
+    .el-container {
+      height: 100%;
+    }
+    .logo {
+      height: 60px;
+      line-height: 60px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #409EFF;
+      background-color: #f8f8f8;
+    }
+    .header-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+    }
+    .report-toolbar {
+      margin-bottom: 20px;
+    }
+    .pagination-container {
+      margin-top: 20px;
+      text-align: right;
+    }
+    @media print {
+      .el-header, .el-aside {
+        display: none !important;
+      }
+      .el-main {
+        padding: 0 !important;
+      }
+      .el-card__header {
+        padding: 10px 20px !important;
+      }
+    }
+  </style>
+</body>
+</html>

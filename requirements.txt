@@ -1,0 +1,10 @@
+streamlit
+pandas
+SQLAlchemy>=2.0
+pyodbc
+pydantic
+python-dotenv
+numexpr
+openpyxl
+xlsxwriter
+loguru 

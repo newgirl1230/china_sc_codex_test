@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>报表构建器 - 供应链分析平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+  <div id="app">
+    <el-container>
+      <!-- 侧边导航 (同仪表盘页面) -->
+      <!-- ... -->
+
+      <el-container>
+        <el-header>
+          <!-- 头部工具栏 (同仪表盘页面) -->
+          <!-- ... -->
+        </el-header>
+
+        <el-main>
+          <el-card>
+            <div slot="header">
+              <span>新建报表</span>
+              <div style="float: right;">
+                <el-button type="primary" size="small" @click="saveReport">保存</el-button>
+                <el-button size="small" @click="runReport" :loading="loading">运行</el-button>
+              </div>
+            </div>
+
+            <el-form label-width="100px">
+              <el-form-item label="报表名称">
+                <el-input v-model="reportName" placeholder="请输入报表名称"></el-input>
+              </el-form-item>
+              
+              <el-form-item label="数据源">
+                <el-select v-model="dataSource" placeholder="请选择数据源">
+                  <el-option label="库存数据" value="inventory"></el-option>
+                  <el-option label="销售订单" value="sales"></el-option>
+                  <el-option label="采购订单" value="purchase"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="选择字段">
+                <el-transfer
+                  v-model="selectedFields"
+                  :data="availableFields"
+                  :titles="['可选字段', '已选字段']">
+                </el-transfer>
+              </el-form-item>
+
+              <el-form-item label="筛选条件">
+                <div class="filter-conditions">
+                  <div v-for="(condition, index) in filters" :key="index" class="filter-item">
+                    <el-select v-model="condition.field" placeholder="字段" style="width: 150px">
+                      <el-option
+                        v-for="field in filterableFields"
+                        :key="field.key"
+                        :label="field.label"
+                        :value="field.key">
+                      </el-option>
+                    </el-select>
+                    
+                    <el-select v-model="condition.operator" placeholder="操作符" style="width: 100px">
+                      <el-option label="等于" value="="></el-option>
+                      <el-option label="大于" value=">"></el-option>
+                      <el-option label="小于" value="<"></el-option>
+                      <el-option label="包含" value="like"></el-option>
+                    </el-select>
+                    
+                    <el-input v-model="condition.value" placeholder="值" style="width: 200px"></el-input>
+                    
+                    <el-button @click="removeFilter(index)" icon="el-icon-delete" circle></el-button>
+                  </div>
+                  <el-button @click="addFilter" icon="el-icon-plus" size="small">添加条件</el-button>
+                </div>
+              </el-form-item>
+
+              <el-form-item label="计算字段">
+                <el-table :data="calculatedFields" border style="width: 100%">
+                  <el-table-column prop="name" label="字段名" width="180">
+                    <template slot-scope="scope">
+                      <el-input v-model="scope.row.name"></el-input>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="expression" label="表达式">
+                    <template slot-scope="scope">
+                      <el-input v-model="scope.row.expression" placeholder="例如: quantity * price">
+                        <template slot="prepend">
+                          <el-select v-model="scope.row.aggregation" placeholder="聚合" style="width: 100px">
+                            <el-option label="无" value=""></el-option>
+                            <el-option label="求和" value="sum"></el-option>
+                            <el-option label="平均" value="avg"></el-option>
+                            <el-option label="计数" value="count"></el-option>
+                          </el-select>
+                        </template>
+                      </el-input>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" width="80">
+                    <template slot-scope="scope">
+                      <el-button @click="removeCalculatedField(scope.$index)" type="text" size="small">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <el-button @click="addCalculatedField" icon="el-icon-plus" size="small" style="margin-top: 10px">添加计算字段</el-button>
+              </el-form-item>
+            </el-form>
+          </el-card>
+
+          <!-- 预览区域 -->
+          <el-card v-if="previewData.length > 0" style="margin-top: 20px">
+            <div slot="header">
+              <span>报表预览</span>
+              <el-button style="float: right; padding: 3px 0" type="text" @click="exportToExcel">导出Excel</el-button>
+            </div>
+            <el-table :data="previewData" border style="width: 100%" height="400">
+              <el-table-column v-for="col in previewColumns" :key="col.prop" :prop="col.prop" :label="col.label"></el-table-column>
+            </el-table>
+          </el-card>
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          reportName: '',
+          dataSource: '',
+          loading: false,
+          selectedFields: [],
+          availableFields: [
+            { key: 'product_id', label: '产品ID' },
+            { key: 'product_name', label: '产品名称' },
+            { key: 'category', label: '类别' },
+            { key: 'quantity', label: '数量' },
+            { key: 'price', label: '单价' },
+            { key: 'warehouse', label: '仓库' },
+            { key: 'status', label: '状态' }
+          ],
+          filters: [],
+          filterableFields: [
+            { key: 'warehouse', label: '仓库' },
+            { key: 'status', label: '状态' },
+            { key: 'quantity', label: '数量' },
+            { key: 'category', label: '类别' }
+          ],
+          calculatedFields: [],
+          previewData: [],
+          previewColumns: []
+        }
+      },
+      methods: {
+        addFilter() {
+          this.filters.push({
+            field: '',
+            operator: '',
+            value: ''
+          });
+        },
+        removeFilter(index) {
+          this.filters.splice(index, 1);
+        },
+        addCalculatedField() {
+          this.calculatedFields.push({
+            name: '',
+            expression: '',
+            aggregation: ''
+          });
+        },
+        removeCalculatedField(index) {
+          this.calculatedFields.splice(index, 1);
+        },
+        runReport() {
+          this.loading = true;
+          // 模拟API调用
+          setTimeout(() => {
+            this.previewData = [
+              { product_id: 'P1001', product_name: '商品A', category: '电子产品', quantity: 100, price: 299, warehouse: '华东仓' },
+              { product_id: 'P1002', product_name: '商品B', category: '家居用品', quantity: 50, price: 199, warehouse: '华南仓' },
+              { product_id: 'P1003', product_name: '商品C', category: '食品', quantity: 200, price: 59, warehouse: '华北仓' }
+            ];
+            
+            this.previewColumns = [
+              { prop: 'product_id', label: '产品ID' },
+              { prop: 'product_name', label: '产品名称' },
+              { prop: 'category', label: '类别' },
+              { prop: 'quantity', label: '数量' },
+              { prop: 'price', label: '单价' },
+              { prop: 'warehouse', label: '仓库' }
+            ];
+            
+            this.loading = false;
+            this.$message.success('报表生成成功');
+          }, 1500);
+        },
+        saveReport() {
+          if (!this.reportName) {
+            this.$message.warning('请输入报表名称');
+            return;
+          }
+          this.$message.success(`报表"${this.reportName}"保存成功`);
+        },
+        exportToExcel() {
+          this.$message.info('导出Excel功能将在实际应用中实现');
+        }
+      }
+    });
+  </script>
+  <style>
+    .filter-conditions {
+      border: 1px solid #ebeef5;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .filter-item {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .filter-item > * {
+      margin-right: 10px;
+    }
+  </style>
+</body>
+</html>
