@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Builder</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar card">
+        <div>
+          <h2>Supply Chain Report Platform</h2>
+          <nav>
+            <a class="nav-item" href="report-center.html">Report Center</a>
+            <a class="nav-sub-item active" href="report-builder.html">Report Builder</a>
+            <a class="nav-sub-item" href="report-manager.html">Report Manager</a>
+            <a class="nav-sub-item" href="data-upload.html">Data Upload</a>
+            <a class="nav-sub-item" href="offline-hub.html">Offline File Hub</a>
+            <a class="nav-item" href="job-monitor.html">Job Monitor</a>
+          </nav>
+        </div>
+        <div class="user">User XXX</div>
+      </aside>
+
+      <main class="card content-wrap">
+        <header class="page-header">
+          <h1>Report Builder</h1>
+          <div class="button-row">
+            <button class="primary">Save</button>
+            <button class="primary">Preview</button>
+            <button class="primary">Run</button>
+          </div>
+        </header>
+
+        <div class="form-grid">
+          <label>Variant Name <input placeholder="Enter Name" /></label>
+          <label>Data Source
+            <select>
+              <option>Select Source</option>
+              <option>INV - Stock on Hand</option>
+              <option>SO - Open Orders</option>
+              <option>PO - Open Orders</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="card-lite">
+          <h3>Data Fields (Drag to reorder)</h3>
+          <div class="chips" id="field-pool"></div>
+        </div>
+
+        <div class="card-lite">
+          <h3>Selected Fields (Drop zone)</h3>
+          <div class="dropzone" id="selected-fields"></div>
+        </div>
+
+        <div class="card-lite">
+          <h3>Filters</h3>
+          <div class="form-grid small">
+            <select><option>Field</option></select>
+            <select><option>Operator</option></select>
+            <input placeholder="Value" />
+          </div>
+          <button class="muted">+ Add Filter</button>
+        </div>
+
+        <div class="card-lite">
+          <h3>Calculation</h3>
+          <table>
+            <thead><tr><th>Field Name</th><th>Expression</th><th>Action</th></tr></thead>
+            <tbody><tr><td><input placeholder="calc_field" /></td><td><input placeholder="quantity * price" /></td><td><button class="link-btn">Delete</button></td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="card-lite">
+          <header class="table-header"><h3>Preview (limit 500 rows)</h3><button class="muted">Download</button></header>
+          <table>
+            <thead><tr><th>Field 1</th><th>Field 2</th><th>Field 3</th><th>Field 4</th><th>Field 5</th></tr></thead>
+            <tbody id="preview-rows"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

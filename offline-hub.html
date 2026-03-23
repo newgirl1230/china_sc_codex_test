@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline File Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar card">
+        <div>
+          <h2>Supply Chain Report Platform</h2>
+          <nav>
+            <a class="nav-item" href="report-center.html">Report Center</a>
+            <a class="nav-sub-item" href="report-builder.html">Report Builder</a>
+            <a class="nav-sub-item" href="report-manager.html">Report Manager</a>
+            <a class="nav-sub-item" href="data-upload.html">Data Upload</a>
+            <a class="nav-sub-item active" href="offline-hub.html">Offline File Hub</a>
+            <a class="nav-item" href="job-monitor.html">Job Monitor</a>
+          </nav>
+        </div>
+        <div class="user">User XXX</div>
+      </aside>
+
+      <main class="card content-wrap">
+        <header class="page-header"><h1>Offline File Hub</h1></header>
+        <div class="form-grid small inline-filters">
+          <select><option>Category</option></select>
+          <select><option>Sub-Category</option></select>
+          <select><option>Integration Method</option></select>
+          <select><option>COE Engineer</option></select>
+        </div>
+        <table>
+          <thead>
+            <tr><th></th><th>Category</th><th>Sub-Category</th><th>Integration Method</th><th>File Name / DB Table</th><th>Description</th><th>Data Provider</th><th>COE Engineer</th><th>Update Frequency</th><th>File Path</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><input type="checkbox" checked /></td><td>Demand</td><td>Sales</td><td>SFTP</td><td>cn_sales.csv</td><td>Daily sales</td><td>Planning</td><td>User A</td><td>Daily</td><td>/data/inbound</td><td>Forecast</td></tr>
+            <tr><td><input type="checkbox" /></td><td>Supply</td><td>Inventory</td><td>Manual</td><td>inv_snapshot.xlsx</td><td>Stock snapshot</td><td>Warehouse</td><td>User B</td><td>Weekly</td><td>/data/manual</td><td>Reporting</td></tr>
+          </tbody>
+        </table>
+        <div class="align-right"><button class="primary">Download Template</button></div>
+      </main>
+    </div>
+  </body>
+</html>

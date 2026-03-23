@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar card">
+        <div>
+          <h2>Supply Chain Report Platform</h2>
+          <nav>
+            <a class="nav-item" href="report-center.html">Report Center</a>
+            <a class="nav-sub-item" href="report-builder.html">Report Builder</a>
+            <a class="nav-sub-item active" href="report-manager.html">Report Manager</a>
+            <a class="nav-sub-item" href="data-upload.html">Data Upload</a>
+            <a class="nav-sub-item" href="offline-hub.html">Offline File Hub</a>
+            <a class="nav-item" href="job-monitor.html">Job Monitor</a>
+          </nav>
+        </div>
+        <div class="user">User XXX</div>
+      </aside>
+
+      <main class="card content-wrap">
+        <header class="page-header"><h1>Report Manager</h1></header>
+        <div class="toolbar">
+          <input placeholder="Search by Variant Name, Data Source" />
+          <button class="primary">Search</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Variant Name</th><th>Data Source</th><th>Creator</th><th>Last Update</th><th>Operation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SOH_CMD</td><td>INV - Stock on Hand</td><td>A</td><td>2026-03-21</td><td class="ops"><button class="muted">Run</button><a class="pill-link" href="report-builder.html">Edit</a><button class="muted">Copy</button><button class="danger">Delete</button></td></tr>
+            <tr><td>SOH_LPG</td><td>INV - Stock on Hand</td><td>B</td><td>2026-03-20</td><td class="ops"><button class="muted">Run</button><a class="pill-link" href="report-builder.html">Edit</a><button class="muted">Copy</button><button class="danger">Delete</button></td></tr>
+          </tbody>
+        </table>
+      </main>
+    </div>
+  </body>
+</html>

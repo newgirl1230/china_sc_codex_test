@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Upload</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar card">
+        <div>
+          <h2>Supply Chain Report Platform</h2>
+          <nav>
+            <a class="nav-item" href="report-center.html">Report Center</a>
+            <a class="nav-sub-item" href="report-builder.html">Report Builder</a>
+            <a class="nav-sub-item" href="report-manager.html">Report Manager</a>
+            <a class="nav-sub-item active" href="data-upload.html">Data Upload</a>
+            <a class="nav-sub-item" href="offline-hub.html">Offline File Hub</a>
+            <a class="nav-item" href="job-monitor.html">Job Monitor</a>
+          </nav>
+        </div>
+        <div class="user">User XXX</div>
+      </aside>
+
+      <main class="card content-wrap">
+        <header class="page-header"><h1>Data Upload</h1></header>
+        <div class="upload-layout">
+          <div>
+            <h3>1. Upload File</h3>
+            <div class="form-grid">
+              <label>Select File <input type="text" value="......" /></label>
+              <label>Select Tab
+                <select><option>Select from Drop-Down List</option></select>
+              </label>
+            </div>
+            <h3>2. Preview Data</h3>
+            <table>
+              <thead><tr><th>Field 1</th><th>Field 2</th><th>Field 3</th><th>Field 4</th><th>Field 5</th></tr></thead>
+              <tbody><tr><td colspan="5">Sample preview rows shown here…</td></tr></tbody>
+            </table>
+
+            <h3>3. Choose Destination</h3>
+            <label>Destination Table
+              <select>
+                <option>Select from Drop-Down List</option>
+                <option>CNDB - Revenue - LPG</option>
+                <option>CNDB - Backlog - LPG</option>
+                <option>MD - SKU</option>
+              </select>
+            </label>
+
+            <h3>4. Execute Upload</h3>
+            <div class="button-row">
+              <button class="muted">Upload</button>
+              <button class="muted">Cancel</button>
+              <span class="toast success">Successfully Upload File !</span>
+              <span class="toast error">Fail to Upload File !</span>
+            </div>
+          </div>
+          <div class="status-col">
+            <span class="toast success">Successfully Read File !</span>
+            <span class="toast error">Fail to Read File !</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
