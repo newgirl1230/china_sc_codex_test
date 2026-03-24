@@ -1,1 +1,0 @@
-# China SC Codex Test
